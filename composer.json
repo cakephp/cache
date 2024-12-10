@@ -22,8 +22,8 @@
         "source": "https://github.com/cakephp/cache"
     },
     "require": {
-        "php": ">=8.1",
-        "cakephp/core": "^5.1",
+        "php": ">=8.4",
+        "cakephp/core": "6.x-dev",
         "psr/simple-cache": "^2.0 || ^3.0"
     },
     "provide": {
@@ -33,5 +33,7 @@
         "psr-4": {
             "Cake\\Cache\\": "."
         }
-    }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }
