@@ -23,7 +23,7 @@
     },
     "require": {
         "php": ">=8.4",
-        "cakephp/core": "6.x-dev",
+        "cakephp/core": "^6.0",
         "psr/simple-cache": "^2.0 || ^3.0"
     },
     "provide": {
