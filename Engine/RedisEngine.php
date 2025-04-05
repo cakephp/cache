@@ -433,7 +433,7 @@ class RedisEngine extends CacheEngine
      * Serialize value for saving to Redis.
      *
      * This is needed instead of using Redis' in built serialization feature
-     * as it creates problems incrementing/decrementing intially set integer value.
+     * as it creates problems incrementing/decrementing initially set integer value.
      *
      * @param mixed $value Value to serialize.
      * @return string
