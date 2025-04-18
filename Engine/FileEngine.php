@@ -182,7 +182,6 @@ class FileEngine extends CacheEngine
         $data = '';
         $this->_File->next();
         while ($this->_File->valid()) {
-            /** @psalm-suppress PossiblyInvalidOperand */
             $data .= $this->_File->current();
             $this->_File->next();
         }
@@ -374,7 +373,6 @@ class FileEngine extends CacheEngine
         if (!$createKey && !$path->isFile()) {
             return false;
         }
-        /** @psalm-suppress TypeDoesNotContainType */
         if (
             !isset($this->_File) ||
             $this->_File->getBasename() !== $key ||
