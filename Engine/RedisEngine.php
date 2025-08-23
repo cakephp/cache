@@ -363,7 +363,7 @@ class RedisEngine extends CacheEngine
      */
     public function has(string $key): bool
     {
-        $res = $this->_Redis->exists($this->_key($key));
+        $res = $this->_Redis->exists($this->key($key));
 
         return is_int($res) ? $res > 0 : $res === true;
     }
