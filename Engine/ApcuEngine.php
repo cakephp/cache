@@ -32,7 +32,7 @@ class ApcuEngine extends CacheEngine
      *
      * @var array<string>
      */
-    protected array $_compiledGroupNames = [];
+    protected array $compiledGroupNames = [];
 
     /**
      * Initialize the Cache Engine
@@ -190,16 +190,16 @@ class ApcuEngine extends CacheEngine
      */
     public function groups(): array
     {
-        if (!$this->_compiledGroupNames) {
+        if (!$this->compiledGroupNames) {
             foreach ($this->_config['groups'] as $group) {
-                $this->_compiledGroupNames[] = $this->_config['prefix'] . $group;
+                $this->compiledGroupNames[] = $this->_config['prefix'] . $group;
             }
         }
 
         $success = false;
-        $groups = apcu_fetch($this->_compiledGroupNames, $success);
+        $groups = apcu_fetch($this->compiledGroupNames, $success);
         if ($success && count($groups) !== count($this->_config['groups'])) {
-            foreach ($this->_compiledGroupNames as $group) {
+            foreach ($this->compiledGroupNames as $group) {
                 if (!isset($groups[$group])) {
                     $value = 1;
                     if (apcu_store($group, $value) === false) {

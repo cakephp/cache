@@ -41,7 +41,7 @@ class FileEngine extends CacheEngine
      *
      * @var \SplFileObject
      */
-    protected SplFileObject $_File;
+    protected SplFileObject $File;
 
     /**
      * The default config used unless overridden by runtime configuration
@@ -75,7 +75,7 @@ class FileEngine extends CacheEngine
      *
      * @var bool
      */
-    protected bool $_init = true;
+    protected bool $init = true;
 
     /**
      * Initialize File Cache Engine
@@ -93,8 +93,8 @@ class FileEngine extends CacheEngine
         if (substr($this->_config['path'], -1) !== DIRECTORY_SEPARATOR) {
             $this->_config['path'] .= DIRECTORY_SEPARATOR;
         }
-        if ($this->_groupPrefix) {
-            $this->_groupPrefix = str_replace('_', DIRECTORY_SEPARATOR, $this->_groupPrefix);
+        if ($this->groupPrefix) {
+            $this->groupPrefix = str_replace('_', DIRECTORY_SEPARATOR, $this->groupPrefix);
         }
 
         return $this->active();
@@ -112,7 +112,7 @@ class FileEngine extends CacheEngine
      */
     public function set(string $key, mixed $value, DateInterval|int|null $ttl = null): bool
     {
-        if ($value === '' || !$this->_init) {
+        if ($value === '' || !$this->init) {
             return false;
         }
 
@@ -130,18 +130,18 @@ class FileEngine extends CacheEngine
         $contents = implode('', [$expires, PHP_EOL, $value, PHP_EOL]);
 
         if ($this->_config['lock']) {
-            $this->_File->flock(LOCK_EX);
+            $this->File->flock(LOCK_EX);
         }
 
-        $this->_File->rewind();
-        $success = $this->_File->ftruncate(0) &&
-            $this->_File->fwrite($contents) &&
-            $this->_File->fflush();
+        $this->File->rewind();
+        $success = $this->File->ftruncate(0) &&
+            $this->File->fwrite($contents) &&
+            $this->File->fflush();
 
         if ($this->_config['lock']) {
-            $this->_File->flock(LOCK_UN);
+            $this->File->flock(LOCK_UN);
         }
-        unset($this->_File);
+        unset($this->File);
 
         return $success;
     }
@@ -158,35 +158,35 @@ class FileEngine extends CacheEngine
     {
         $key = $this->key($key);
 
-        if (!$this->_init || $this->setKey($key) === false) {
+        if (!$this->init || $this->setKey($key) === false) {
             return $default;
         }
 
         if ($this->_config['lock']) {
-            $this->_File->flock(LOCK_SH);
+            $this->File->flock(LOCK_SH);
         }
 
-        $this->_File->rewind();
+        $this->File->rewind();
         $time = time();
-        $cachetime = (int)$this->_File->current();
+        $cachetime = (int)$this->File->current();
 
         if ($cachetime < $time) {
             if ($this->_config['lock']) {
-                $this->_File->flock(LOCK_UN);
+                $this->File->flock(LOCK_UN);
             }
 
             return $default;
         }
 
         $data = '';
-        $this->_File->next();
-        while ($this->_File->valid()) {
-            $data .= $this->_File->current();
-            $this->_File->next();
+        $this->File->next();
+        while ($this->File->valid()) {
+            $data .= $this->File->current();
+            $this->File->next();
         }
 
         if ($this->_config['lock']) {
-            $this->_File->flock(LOCK_UN);
+            $this->File->flock(LOCK_UN);
         }
 
         $data = trim($data);
@@ -209,12 +209,12 @@ class FileEngine extends CacheEngine
     {
         $key = $this->key($key);
 
-        if ($this->setKey($key) === false || !$this->_init) {
+        if ($this->setKey($key) === false || !$this->init) {
             return false;
         }
 
-        $path = $this->_File->getRealPath();
-        unset($this->_File);
+        $path = $this->File->getRealPath();
+        unset($this->File);
 
         if ($path === false) {
             return false;
@@ -232,10 +232,10 @@ class FileEngine extends CacheEngine
      */
     public function clear(): bool
     {
-        if (!$this->_init) {
+        if (!$this->init) {
             return false;
         }
-        unset($this->_File);
+        unset($this->File);
 
         $this->clearDirectory($this->_config['path']);
 
@@ -358,8 +358,8 @@ class FileEngine extends CacheEngine
     protected function setKey(string $key, bool $createKey = false): bool
     {
         $groups = null;
-        if ($this->_groupPrefix) {
-            $groups = vsprintf($this->_groupPrefix, $this->groups());
+        if ($this->groupPrefix) {
+            $groups = vsprintf($this->groupPrefix, $this->groups());
         }
         $dir = $this->_config['path'] . $groups;
 
@@ -373,13 +373,13 @@ class FileEngine extends CacheEngine
             return false;
         }
         if (
-            !isset($this->_File) ||
-            $this->_File->getBasename() !== $key ||
-            $this->_File->valid() === false
+            !isset($this->File) ||
+            $this->File->getBasename() !== $key ||
+            $this->File->valid() === false
         ) {
             $exists = is_file($path->getPathname());
             try {
-                $this->_File = $path->openFile('c+');
+                $this->File = $path->openFile('c+');
             } catch (Exception $e) {
                 trigger_error($e->getMessage(), E_USER_WARNING);
 
@@ -387,10 +387,10 @@ class FileEngine extends CacheEngine
             }
             unset($path);
 
-            if (!$exists && !chmod($this->_File->getPathname(), (int)$this->_config['mask'])) {
+            if (!$exists && !chmod($this->File->getPathname(), (int)$this->_config['mask'])) {
                 trigger_error(sprintf(
                     'Could not apply permission mask `%s` on cache file `%s`',
-                    $this->_File->getPathname(),
+                    $this->File->getPathname(),
                     $this->_config['mask'],
                 ), E_USER_WARNING);
             }
@@ -416,8 +416,8 @@ class FileEngine extends CacheEngine
         }
 
         $isWritableDir = ($dir->isDir() && $dir->isWritable());
-        if (!$success || ($this->_init && !$isWritableDir)) {
-            $this->_init = false;
+        if (!$success || ($this->init && !$isWritableDir)) {
+            $this->init = false;
             trigger_error(sprintf(
                 '%s is not writable',
                 $this->_config['path'],
@@ -445,7 +445,7 @@ class FileEngine extends CacheEngine
      */
     public function clearGroup(string $group): bool
     {
-        unset($this->_File);
+        unset($this->File);
 
         $prefix = (string)$this->_config['prefix'];
 
