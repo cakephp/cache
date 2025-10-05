@@ -76,7 +76,7 @@ class Cache
      * @var array<string, string>
      * @phpstan-var array<string, class-string>
      */
-    protected static array $_dsnClassMap = [
+    protected static array $dsnClassMap = [
         'array' => Engine\ArrayEngine::class,
         'apcu' => Engine\ApcuEngine::class,
         'file' => Engine\FileEngine::class,
@@ -90,21 +90,21 @@ class Cache
      *
      * @var bool
      */
-    protected static bool $_enabled = true;
+    protected static bool $enabled = true;
 
     /**
      * Group to Config mapping
      *
      * @var array<string, array>
      */
-    protected static array $_groups = [];
+    protected static array $groups = [];
 
     /**
      * Cache Registry used for creating and using cache adapters.
      *
      * @var \Cake\Cache\CacheRegistry
      */
-    protected static CacheRegistry $_registry;
+    protected static CacheRegistry $registry;
 
     /**
      * Returns the Cache Registry instance used for creating and using cache adapters.
@@ -113,7 +113,7 @@ class Cache
      */
     public static function getRegistry(): CacheRegistry
     {
-        return static::$_registry ??= new CacheRegistry();
+        return static::$registry ??= new CacheRegistry();
     }
 
     /**
@@ -126,7 +126,7 @@ class Cache
      */
     public static function setRegistry(CacheRegistry $registry): void
     {
-        static::$_registry = $registry;
+        static::$registry = $registry;
     }
 
     /**
@@ -141,13 +141,13 @@ class Cache
     {
         $registry = static::getRegistry();
 
-        if (empty(static::$_config[$name]['className'])) {
+        if (empty(static::$config[$name]['className'])) {
             throw new InvalidArgumentException(
                 sprintf('The `%s` cache configuration does not exist.', $name),
             );
         }
 
-        $config = static::$_config[$name];
+        $config = static::$config[$name];
 
         try {
             $registry->load($name, $config);
@@ -188,9 +188,9 @@ class Cache
         if (!empty($config['groups'])) {
             /** @var string $group */
             foreach ($config['groups'] as $group) {
-                static::$_groups[$group][] = $name;
-                static::$_groups[$group] = array_unique(static::$_groups[$group]);
-                sort(static::$_groups[$group]);
+                static::$groups[$group][] = $name;
+                static::$groups[$group] = array_unique(static::$groups[$group]);
+                sort(static::$groups[$group]);
             }
         }
     }
@@ -203,7 +203,7 @@ class Cache
      */
     public static function pool(string $config): CacheInterface&CacheEngineInterface
     {
-        if (!static::$_enabled) {
+        if (!static::$enabled) {
             return new NullEngine();
         }
 
@@ -494,11 +494,11 @@ class Cache
             static::pool($config);
         }
         if ($group === null) {
-            return static::$_groups;
+            return static::$groups;
         }
 
-        if (isset(self::$_groups[$group])) {
-            return [$group => self::$_groups[$group]];
+        if (isset(self::$groups[$group])) {
+            return [$group => self::$groups[$group]];
         }
 
         throw new InvalidArgumentException(sprintf('Invalid cache group `%s`.', $group));
@@ -513,7 +513,7 @@ class Cache
      */
     public static function enable(): void
     {
-        static::$_enabled = true;
+        static::$enabled = true;
     }
 
     /**
@@ -525,7 +525,7 @@ class Cache
      */
     public static function disable(): void
     {
-        static::$_enabled = false;
+        static::$enabled = false;
     }
 
     /**
@@ -535,7 +535,7 @@ class Cache
      */
     public static function enabled(): bool
     {
-        return static::$_enabled;
+        return static::$enabled;
     }
 
     /**

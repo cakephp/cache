@@ -67,7 +67,7 @@ abstract class CacheEngine implements CacheInterface, CacheEngineInterface
      *
      * @var string
      */
-    protected string $_groupPrefix = '';
+    protected string $groupPrefix = '';
 
     /**
      * Initialize the cache engine
@@ -84,7 +84,7 @@ abstract class CacheEngine implements CacheInterface, CacheEngineInterface
 
         if (!empty($this->_config['groups'])) {
             sort($this->_config['groups']);
-            $this->_groupPrefix = str_repeat('%s_', count($this->_config['groups']));
+            $this->groupPrefix = str_repeat('%s_', count($this->_config['groups']));
         }
         if (!is_numeric($this->_config['duration'])) {
             $this->_config['duration'] = strtotime($this->_config['duration']) - time();
@@ -340,7 +340,7 @@ abstract class CacheEngine implements CacheInterface, CacheEngineInterface
         $this->ensureValidKey($key);
 
         $prefix = '';
-        if ($this->_groupPrefix) {
+        if ($this->groupPrefix) {
             $prefix = hash('xxh128', implode('_', $this->groups()));
         }
         $key = preg_replace('/[\s]+/', '_', $key);
