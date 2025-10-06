@@ -73,7 +73,7 @@ class RedisEngine extends CacheEngine
      *
      * @var array<string, mixed>
      */
-    protected array $_defaultConfig = [
+    protected array $defaultConfig = [
         'clusterName' => null,
         'database' => 0,
         'duration' => 3600,
@@ -124,7 +124,7 @@ class RedisEngine extends CacheEngine
      */
     protected function connect(): bool
     {
-        if (!empty($this->_config['nodes']) || !empty($this->_config['clusterName'])) {
+        if (!empty($this->config['nodes']) || !empty($this->config['clusterName'])) {
             return $this->connectRedisCluster();
         }
 
@@ -140,7 +140,7 @@ class RedisEngine extends CacheEngine
     {
         $connected = false;
 
-        if (empty($this->_config['nodes'])) {
+        if (empty($this->config['nodes'])) {
             // @codeCoverageIgnoreStart
             if (class_exists(Log::class)) {
                 Log::error('RedisEngine requires one or more nodes in cluster mode');
@@ -152,7 +152,7 @@ class RedisEngine extends CacheEngine
 
         // @codeCoverageIgnoreStart
         $ssl = [];
-        if ($this->_config['tls']) {
+        if ($this->config['tls']) {
             $map = [
                 'ssl_ca' => 'cafile',
                 'ssl_key' => 'local_pk',
@@ -163,8 +163,8 @@ class RedisEngine extends CacheEngine
             ];
 
             foreach ($map as $configKey => $sslOption) {
-                if (array_key_exists($configKey, $this->_config)) {
-                    $ssl[$sslOption] = $this->_config[$configKey];
+                if (array_key_exists($configKey, $this->config)) {
+                    $ssl[$sslOption] = $this->config[$configKey];
                 }
             }
         }
@@ -172,13 +172,13 @@ class RedisEngine extends CacheEngine
 
         try {
             $this->Redis = new RedisCluster(
-                $this->_config['clusterName'],
-                $this->_config['nodes'],
-                (float)$this->_config['timeout'],
-                (float)$this->_config['readTimeout'],
-                $this->_config['persistent'],
-                $this->_config['password'],
-                $this->_config['tls'] ? ['ssl' => $ssl] : null, // @codeCoverageIgnore
+                $this->config['clusterName'],
+                $this->config['nodes'],
+                (float)$this->config['timeout'],
+                (float)$this->config['readTimeout'],
+                $this->config['persistent'],
+                $this->config['password'],
+                $this->config['tls'] ? ['ssl' => $ssl] : null, // @codeCoverageIgnore
             );
 
             $connected = true;
@@ -192,7 +192,7 @@ class RedisEngine extends CacheEngine
             // @codeCoverageIgnoreEnd
         }
 
-        $failover = match ($this->_config['failover']) {
+        $failover = match ($this->config['failover']) {
             RedisCluster::FAILOVER_DISTRIBUTE, 'distribute' => RedisCluster::FAILOVER_DISTRIBUTE,
             RedisCluster::FAILOVER_DISTRIBUTE_SLAVES, 'distribute_slaves' => RedisCluster::FAILOVER_DISTRIBUTE_SLAVES,
             RedisCluster::FAILOVER_ERROR, 'error' => RedisCluster::FAILOVER_ERROR,
@@ -214,7 +214,7 @@ class RedisEngine extends CacheEngine
      */
     protected function connectRedis(): bool
     {
-        $tls = $this->_config['tls'] === true ? 'tls://' : '';
+        $tls = $this->config['tls'] === true ? 'tls://' : '';
 
         $map = [
             'ssl_ca' => 'cafile',
@@ -224,19 +224,19 @@ class RedisEngine extends CacheEngine
 
         $ssl = [];
         foreach ($map as $key => $context) {
-            if (!empty($this->_config[$key])) {
-                $ssl[$context] = $this->_config[$key];
+            if (!empty($this->config[$key])) {
+                $ssl[$context] = $this->config[$key];
             }
         }
 
         try {
             $this->Redis = $this->createRedisInstance();
-            if (!empty($this->_config['unix_socket'])) {
-                $return = $this->Redis->connect($this->_config['unix_socket']);
-            } elseif (empty($this->_config['persistent'])) {
-                $return = $this->connectTransient($tls . $this->_config['server'], $ssl);
+            if (!empty($this->config['unix_socket'])) {
+                $return = $this->Redis->connect($this->config['unix_socket']);
+            } elseif (empty($this->config['persistent'])) {
+                $return = $this->connectTransient($tls . $this->config['server'], $ssl);
             } else {
-                $return = $this->connectPersistent($tls . $this->_config['server'], $ssl);
+                $return = $this->connectPersistent($tls . $this->config['server'], $ssl);
             }
         } catch (RedisException $e) {
             if (class_exists(Log::class)) {
@@ -246,11 +246,11 @@ class RedisEngine extends CacheEngine
             return false;
         }
 
-        if ($return && $this->_config['password']) {
-            $return = $this->Redis->auth($this->_config['password']);
+        if ($return && $this->config['password']) {
+            $return = $this->Redis->auth($this->config['password']);
         }
         if ($return) {
-            return $this->Redis->select((int)$this->_config['database']);
+            return $this->Redis->select((int)$this->config['database']);
         }
 
         return $return;
@@ -269,15 +269,15 @@ class RedisEngine extends CacheEngine
         if ($ssl === []) {
             return $this->Redis->connect(
                 $server,
-                (int)$this->_config['port'],
-                (int)$this->_config['timeout'],
+                (int)$this->config['port'],
+                (int)$this->config['timeout'],
             );
         }
 
         return $this->Redis->connect(
             $server,
-            (int)$this->_config['port'],
-            (int)$this->_config['timeout'],
+            (int)$this->config['port'],
+            (int)$this->config['timeout'],
             null,
             0,
             0.0,
@@ -295,21 +295,21 @@ class RedisEngine extends CacheEngine
      */
     protected function connectPersistent(string $server, array $ssl): bool
     {
-        $persistentId = $this->_config['port'] . $this->_config['timeout'] . $this->_config['database'];
+        $persistentId = $this->config['port'] . $this->config['timeout'] . $this->config['database'];
 
         if ($ssl === []) {
             return $this->Redis->pconnect(
                 $server,
-                (int)$this->_config['port'],
-                (int)$this->_config['timeout'],
+                (int)$this->config['port'],
+                (int)$this->config['timeout'],
                 $persistentId,
             );
         }
 
         return $this->Redis->pconnect(
             $server,
-            (int)$this->_config['port'],
-            (int)$this->_config['timeout'],
+            (int)$this->config['port'],
+            (int)$this->config['timeout'],
             $persistentId,
             0,
             0.0,
@@ -377,7 +377,7 @@ class RedisEngine extends CacheEngine
      */
     public function increment(string $key, int $offset = 1): int|false
     {
-        $duration = $this->_config['duration'];
+        $duration = $this->config['duration'];
         $key = $this->key($key);
 
         $value = $this->Redis->incrBy($key, $offset);
@@ -397,7 +397,7 @@ class RedisEngine extends CacheEngine
      */
     public function decrement(string $key, int $offset = 1): int|false
     {
-        $duration = $this->_config['duration'];
+        $duration = $this->config['duration'];
         $key = $this->key($key);
 
         $value = $this->Redis->decrBy($key, $offset);
@@ -450,7 +450,7 @@ class RedisEngine extends CacheEngine
         }
 
         $isAllDeleted = true;
-        $pattern = $this->_config['prefix'] . '*';
+        $pattern = $this->config['prefix'] . '*';
 
         foreach ($this->scanKeys($pattern) as $key) {
             $isDeleted = ((int)$this->Redis->unlink($key) > 0);
@@ -474,7 +474,7 @@ class RedisEngine extends CacheEngine
         }
 
         $isAllDeleted = true;
-        $pattern = $this->_config['prefix'] . '*';
+        $pattern = $this->config['prefix'] . '*';
 
         foreach ($this->scanKeys($pattern) as $key) {
             // Blocking delete
@@ -496,7 +496,7 @@ class RedisEngine extends CacheEngine
      */
     public function add(string $key, mixed $value): bool
     {
-        $duration = $this->_config['duration'];
+        $duration = $this->config['duration'];
         $key = $this->key($key);
         $value = $this->serialize($value);
 
@@ -517,11 +517,11 @@ class RedisEngine extends CacheEngine
     public function groups(): array
     {
         $result = [];
-        foreach ($this->_config['groups'] as $group) {
-            $value = $this->Redis->get($this->_config['prefix'] . $group);
+        foreach ($this->config['groups'] as $group) {
+            $value = $this->Redis->get($this->config['prefix'] . $group);
             if (!$value) {
                 $value = $this->serialize(1);
-                $this->Redis->set($this->_config['prefix'] . $group, $value);
+                $this->Redis->set($this->config['prefix'] . $group, $value);
             }
             $result[] = $group . $value;
         }
@@ -538,7 +538,7 @@ class RedisEngine extends CacheEngine
      */
     public function clearGroup(string $group): bool
     {
-        return (bool)$this->Redis->incr($this->_config['prefix'] . $group);
+        return (bool)$this->Redis->incr($this->config['prefix'] . $group);
     }
 
     /**
@@ -600,7 +600,7 @@ class RedisEngine extends CacheEngine
                 $iterator = null;
                 while (true) {
                     // @phpstan-ignore arguments.count, argument.type
-                    $keys = $this->Redis->scan($iterator, $node, $pattern, (int)$this->_config['scanCount']);
+                    $keys = $this->Redis->scan($iterator, $node, $pattern, (int)$this->config['scanCount']);
                     if ($keys === false) {
                         break;
                     }
@@ -613,7 +613,7 @@ class RedisEngine extends CacheEngine
         } else {
             $iterator = null;
             while (true) {
-                $keys = $this->Redis->scan($iterator, $pattern, (int)$this->_config['scanCount']);
+                $keys = $this->Redis->scan($iterator, $pattern, (int)$this->config['scanCount']);
                 if ($keys === false) {
                     break;
                 }
@@ -648,7 +648,7 @@ class RedisEngine extends CacheEngine
      */
     public function __destruct()
     {
-        if (isset($this->Redis) && empty($this->_config['persistent'])) {
+        if (isset($this->Redis) && empty($this->config['persistent'])) {
             $this->Redis->close();
         }
     }

@@ -144,7 +144,7 @@ class ApcuEngine extends CacheEngine
     {
         if (class_exists(APCUIterator::class, false)) {
             $iterator = new APCUIterator(
-                '/^' . preg_quote($this->_config['prefix'], '/') . '/',
+                '/^' . preg_quote($this->config['prefix'], '/') . '/',
                 APC_ITER_NONE,
             );
             apcu_delete($iterator);
@@ -154,7 +154,7 @@ class ApcuEngine extends CacheEngine
 
         $cache = apcu_cache_info(); // Raises warning by itself already
         foreach ($cache['cache_list'] as $key) {
-            if (str_starts_with($key['info'], $this->_config['prefix'])) {
+            if (str_starts_with($key['info'], $this->config['prefix'])) {
                 apcu_delete($key['info']);
             }
         }
@@ -174,7 +174,7 @@ class ApcuEngine extends CacheEngine
     public function add(string $key, mixed $value): bool
     {
         $key = $this->key($key);
-        $duration = $this->_config['duration'];
+        $duration = $this->config['duration'];
 
         return apcu_add($key, $value, $duration);
     }
@@ -191,14 +191,14 @@ class ApcuEngine extends CacheEngine
     public function groups(): array
     {
         if (!$this->compiledGroupNames) {
-            foreach ($this->_config['groups'] as $group) {
-                $this->compiledGroupNames[] = $this->_config['prefix'] . $group;
+            foreach ($this->config['groups'] as $group) {
+                $this->compiledGroupNames[] = $this->config['prefix'] . $group;
             }
         }
 
         $success = false;
         $groups = apcu_fetch($this->compiledGroupNames, $success);
-        if ($success && count($groups) !== count($this->_config['groups'])) {
+        if ($success && count($groups) !== count($this->config['groups'])) {
             foreach ($this->compiledGroupNames as $group) {
                 if (!isset($groups[$group])) {
                     $value = 1;
@@ -215,7 +215,7 @@ class ApcuEngine extends CacheEngine
 
         $result = [];
         $groups = array_values($groups);
-        foreach ($this->_config['groups'] as $i => $group) {
+        foreach ($this->config['groups'] as $i => $group) {
             $result[] = $group . $groups[$i];
         }
 
@@ -233,7 +233,7 @@ class ApcuEngine extends CacheEngine
     public function clearGroup(string $group): bool
     {
         $success = false;
-        apcu_inc($this->_config['prefix'] . $group, 1, $success);
+        apcu_inc($this->config['prefix'] . $group, 1, $success);
 
         return $success;
     }

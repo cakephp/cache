@@ -158,8 +158,8 @@ class ArrayEngine extends CacheEngine
     public function groups(): array
     {
         $result = [];
-        foreach ($this->_config['groups'] as $group) {
-            $key = $this->_config['prefix'] . $group;
+        foreach ($this->config['groups'] as $group) {
+            $key = $this->config['prefix'] . $group;
             $this->data[$key] ??= ['exp' => PHP_INT_MAX, 'val' => 1];
             $value = $this->data[$key]['val'];
             $result[] = $group . $value;
@@ -177,7 +177,7 @@ class ArrayEngine extends CacheEngine
      */
     public function clearGroup(string $group): bool
     {
-        $key = $this->_config['prefix'] . $group;
+        $key = $this->config['prefix'] . $group;
         if (isset($this->data[$key])) {
             $this->data[$key]['val'] += 1;
         }
