@@ -63,7 +63,7 @@ class MemcachedEngine extends CacheEngine
      *
      * @var array<string, mixed>
      */
-    protected array $_defaultConfig = [
+    protected array $defaultConfig = [
         'compress' => false,
         'duration' => 3600,
         'groups' => [],
@@ -131,16 +131,16 @@ class MemcachedEngine extends CacheEngine
             $this->setConfig('servers', $config['servers'], false);
         }
 
-        if (!is_array($this->_config['servers'])) {
-            $this->_config['servers'] = [$this->_config['servers']];
+        if (!is_array($this->config['servers'])) {
+            $this->config['servers'] = [$this->config['servers']];
         }
 
         if (isset($this->Memcached)) {
             return true;
         }
 
-        if ($this->_config['persistent']) {
-            $this->Memcached = new Memcached($this->_config['persistent']);
+        if ($this->config['persistent']) {
+            $this->Memcached = new Memcached($this->config['persistent']);
         } else {
             $this->Memcached = new Memcached();
         }
@@ -150,7 +150,7 @@ class MemcachedEngine extends CacheEngine
         if ($serverList) {
             if ($this->Memcached->isPersistent()) {
                 foreach ($serverList as $server) {
-                    if (!in_array($server['host'] . ':' . $server['port'], $this->_config['servers'], true)) {
+                    if (!in_array($server['host'] . ':' . $server['port'], $this->config['servers'], true)) {
                         throw new InvalidArgumentException(
                             'Invalid cache configuration. Multiple persistent cache configurations are detected' .
                             ' with different `servers` values. `servers` values for persistent cache configurations' .
@@ -164,7 +164,7 @@ class MemcachedEngine extends CacheEngine
         }
 
         $servers = [];
-        foreach ($this->_config['servers'] as $server) {
+        foreach ($this->config['servers'] as $server) {
             $servers[] = $this->parseServerString($server);
         }
 
@@ -172,19 +172,19 @@ class MemcachedEngine extends CacheEngine
             return false;
         }
 
-        if (is_array($this->_config['options'])) {
-            foreach ($this->_config['options'] as $opt => $value) {
+        if (is_array($this->config['options'])) {
+            foreach ($this->config['options'] as $opt => $value) {
                 $this->Memcached->setOption($opt, $value);
             }
         }
 
-        if (empty($this->_config['username']) && !empty($this->_config['login'])) {
+        if (empty($this->config['username']) && !empty($this->config['login'])) {
             throw new InvalidArgumentException(
                 'Please pass "username" instead of "login" for connecting to Memcached',
             );
         }
 
-        if ($this->_config['username'] !== null && $this->_config['password'] !== null) {
+        if ($this->config['username'] !== null && $this->config['password'] !== null) {
             if (!method_exists($this->Memcached, 'setSaslAuthData')) {
                 throw new InvalidArgumentException(
                     'Memcached extension is not built with SASL support',
@@ -192,8 +192,8 @@ class MemcachedEngine extends CacheEngine
             }
             $this->Memcached->setOption(Memcached::OPT_BINARY_PROTOCOL, true);
             $this->Memcached->setSaslAuthData(
-                $this->_config['username'],
-                $this->_config['password'],
+                $this->config['username'],
+                $this->config['password'],
             );
         }
 
@@ -211,7 +211,7 @@ class MemcachedEngine extends CacheEngine
     {
         $this->Memcached->setOption(Memcached::OPT_LIBKETAMA_COMPATIBLE, true);
 
-        $serializer = strtolower($this->_config['serialize']);
+        $serializer = strtolower($this->config['serialize']);
         if (!isset($this->serializers[$serializer])) {
             throw new InvalidArgumentException(
                 sprintf('`%s` is not a valid serializer engine for Memcached.', $serializer),
@@ -242,7 +242,7 @@ class MemcachedEngine extends CacheEngine
 
         $this->Memcached->setOption(
             Memcached::OPT_COMPRESSION,
-            (bool)$this->_config['compress'],
+            (bool)$this->config['compress'],
         );
     }
 
@@ -443,7 +443,7 @@ class MemcachedEngine extends CacheEngine
         }
 
         foreach ($keys as $key) {
-            if (str_starts_with($key, $this->_config['prefix'])) {
+            if (str_starts_with($key, $this->config['prefix'])) {
                 $this->Memcached->delete($key);
             }
         }
@@ -460,7 +460,7 @@ class MemcachedEngine extends CacheEngine
      */
     public function add(string $key, mixed $value): bool
     {
-        $duration = $this->_config['duration'];
+        $duration = $this->config['duration'];
         $key = $this->key($key);
 
         return $this->Memcached->add($key, $value, $duration);
@@ -476,13 +476,13 @@ class MemcachedEngine extends CacheEngine
     public function groups(): array
     {
         if (!$this->compiledGroupNames) {
-            foreach ($this->_config['groups'] as $group) {
-                $this->compiledGroupNames[] = $this->_config['prefix'] . $group;
+            foreach ($this->config['groups'] as $group) {
+                $this->compiledGroupNames[] = $this->config['prefix'] . $group;
             }
         }
 
         $groups = $this->Memcached->getMulti($this->compiledGroupNames) ?: [];
-        if (count($groups) !== count($this->_config['groups'])) {
+        if (count($groups) !== count($this->config['groups'])) {
             foreach ($this->compiledGroupNames as $group) {
                 if (!isset($groups[$group])) {
                     $this->Memcached->set($group, 1, 0);
@@ -494,7 +494,7 @@ class MemcachedEngine extends CacheEngine
 
         $result = [];
         $groups = array_values($groups);
-        foreach ($this->_config['groups'] as $i => $group) {
+        foreach ($this->config['groups'] as $i => $group) {
             $result[] = $group . $groups[$i];
         }
 
@@ -510,6 +510,6 @@ class MemcachedEngine extends CacheEngine
      */
     public function clearGroup(string $group): bool
     {
-        return (bool)$this->Memcached->increment($this->_config['prefix'] . $group);
+        return (bool)$this->Memcached->increment($this->config['prefix'] . $group);
     }
 }

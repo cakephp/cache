@@ -59,7 +59,7 @@ class FileEngine extends CacheEngine
      *
      * @var array<string, mixed>
      */
-    protected array $_defaultConfig = [
+    protected array $defaultConfig = [
         'duration' => 3600,
         'groups' => [],
         'lock' => true,
@@ -89,9 +89,9 @@ class FileEngine extends CacheEngine
     {
         parent::init($config);
 
-        $this->_config['path'] ??= sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'cake_cache' . DIRECTORY_SEPARATOR;
-        if (substr($this->_config['path'], -1) !== DIRECTORY_SEPARATOR) {
-            $this->_config['path'] .= DIRECTORY_SEPARATOR;
+        $this->config['path'] ??= sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'cake_cache' . DIRECTORY_SEPARATOR;
+        if (substr($this->config['path'], -1) !== DIRECTORY_SEPARATOR) {
+            $this->config['path'] .= DIRECTORY_SEPARATOR;
         }
         if ($this->groupPrefix) {
             $this->groupPrefix = str_replace('_', DIRECTORY_SEPARATOR, $this->groupPrefix);
@@ -122,14 +122,14 @@ class FileEngine extends CacheEngine
             return false;
         }
 
-        if (!empty($this->_config['serialize'])) {
+        if (!empty($this->config['serialize'])) {
             $value = serialize($value);
         }
 
         $expires = time() + $this->duration($ttl);
         $contents = implode('', [$expires, PHP_EOL, $value, PHP_EOL]);
 
-        if ($this->_config['lock']) {
+        if ($this->config['lock']) {
             $this->File->flock(LOCK_EX);
         }
 
@@ -138,7 +138,7 @@ class FileEngine extends CacheEngine
             $this->File->fwrite($contents) &&
             $this->File->fflush();
 
-        if ($this->_config['lock']) {
+        if ($this->config['lock']) {
             $this->File->flock(LOCK_UN);
         }
         unset($this->File);
@@ -162,7 +162,7 @@ class FileEngine extends CacheEngine
             return $default;
         }
 
-        if ($this->_config['lock']) {
+        if ($this->config['lock']) {
             $this->File->flock(LOCK_SH);
         }
 
@@ -171,7 +171,7 @@ class FileEngine extends CacheEngine
         $cachetime = (int)$this->File->current();
 
         if ($cachetime < $time) {
-            if ($this->_config['lock']) {
+            if ($this->config['lock']) {
                 $this->File->flock(LOCK_UN);
             }
 
@@ -185,13 +185,13 @@ class FileEngine extends CacheEngine
             $this->File->next();
         }
 
-        if ($this->_config['lock']) {
+        if ($this->config['lock']) {
             $this->File->flock(LOCK_UN);
         }
 
         $data = trim($data);
 
-        if ($data !== '' && !empty($this->_config['serialize'])) {
+        if ($data !== '' && !empty($this->config['serialize'])) {
             return unserialize($data);
         }
 
@@ -237,10 +237,10 @@ class FileEngine extends CacheEngine
         }
         unset($this->File);
 
-        $this->clearDirectory($this->_config['path']);
+        $this->clearDirectory($this->config['path']);
 
         $directory = new RecursiveDirectoryIterator(
-            $this->_config['path'],
+            $this->config['path'],
             FilesystemIterator::SKIP_DOTS,
         );
         $iterator = new RecursiveIteratorIterator(
@@ -295,10 +295,10 @@ class FileEngine extends CacheEngine
             return;
         }
 
-        $prefixLength = strlen($this->_config['prefix']);
+        $prefixLength = strlen($this->config['prefix']);
 
         while (($entry = $dir->read()) !== false) {
-            if (substr($entry, 0, $prefixLength) !== $this->_config['prefix']) {
+            if (substr($entry, 0, $prefixLength) !== $this->config['prefix']) {
                 continue;
             }
 
@@ -361,10 +361,10 @@ class FileEngine extends CacheEngine
         if ($this->groupPrefix) {
             $groups = vsprintf($this->groupPrefix, $this->groups());
         }
-        $dir = $this->_config['path'] . $groups;
+        $dir = $this->config['path'] . $groups;
 
         if (!is_dir($dir)) {
-            mkdir($dir, $this->_config['dirMask'] ^ umask(), true);
+            mkdir($dir, $this->config['dirMask'] ^ umask(), true);
         }
 
         $path = new SplFileInfo($dir . $key);
@@ -387,11 +387,11 @@ class FileEngine extends CacheEngine
             }
             unset($path);
 
-            if (!$exists && !chmod($this->File->getPathname(), (int)$this->_config['mask'])) {
+            if (!$exists && !chmod($this->File->getPathname(), (int)$this->config['mask'])) {
                 trigger_error(sprintf(
                     'Could not apply permission mask `%s` on cache file `%s`',
                     $this->File->getPathname(),
-                    $this->_config['mask'],
+                    $this->config['mask'],
                 ), E_USER_WARNING);
             }
         }
@@ -406,12 +406,12 @@ class FileEngine extends CacheEngine
      */
     protected function active(): bool
     {
-        $dir = new SplFileInfo($this->_config['path']);
+        $dir = new SplFileInfo($this->config['path']);
         $path = $dir->getPathname();
         $success = true;
         if (!is_dir($path)) {
             // phpcs:disable
-            $success = @mkdir($path, $this->_config['dirMask'] ^ umask(), true);
+            $success = @mkdir($path, $this->config['dirMask'] ^ umask(), true);
             // phpcs:enable
         }
 
@@ -420,7 +420,7 @@ class FileEngine extends CacheEngine
             $this->init = false;
             trigger_error(sprintf(
                 '%s is not writable',
-                $this->_config['path'],
+                $this->config['path'],
             ), E_USER_WARNING);
         }
 
@@ -447,9 +447,9 @@ class FileEngine extends CacheEngine
     {
         unset($this->File);
 
-        $prefix = (string)$this->_config['prefix'];
+        $prefix = (string)$this->config['prefix'];
 
-        $directoryIterator = new RecursiveDirectoryIterator($this->_config['path']);
+        $directoryIterator = new RecursiveDirectoryIterator($this->config['path']);
         $contents = new RecursiveIteratorIterator(
             $directoryIterator,
             RecursiveIteratorIterator::CHILD_FIRST,

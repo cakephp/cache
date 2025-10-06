@@ -54,7 +54,7 @@ abstract class CacheEngine implements CacheInterface, CacheEngineInterface
      *
      * @var array<string, mixed>
      */
-    protected array $_defaultConfig = [
+    protected array $defaultConfig = [
         'duration' => 3600,
         'groups' => [],
         'prefix' => 'cake_',
@@ -82,12 +82,12 @@ abstract class CacheEngine implements CacheInterface, CacheEngineInterface
     {
         $this->setConfig($config);
 
-        if (!empty($this->_config['groups'])) {
-            sort($this->_config['groups']);
-            $this->groupPrefix = str_repeat('%s_', count($this->_config['groups']));
+        if (!empty($this->config['groups'])) {
+            sort($this->config['groups']);
+            $this->groupPrefix = str_repeat('%s_', count($this->config['groups']));
         }
-        if (!is_numeric($this->_config['duration'])) {
-            $this->_config['duration'] = strtotime($this->_config['duration']) - time();
+        if (!is_numeric($this->config['duration'])) {
+            $this->config['duration'] = strtotime($this->config['duration']) - time();
         }
 
         return true;
@@ -322,7 +322,7 @@ abstract class CacheEngine implements CacheInterface, CacheEngineInterface
      */
     public function groups(): array
     {
-        return $this->_config['groups'];
+        return $this->config['groups'];
     }
 
     /**
@@ -345,7 +345,7 @@ abstract class CacheEngine implements CacheInterface, CacheEngineInterface
         }
         $key = preg_replace('/[\s]+/', '_', $key);
 
-        return $this->_config['prefix'] . $prefix . $key;
+        return $this->config['prefix'] . $prefix . $key;
     }
 
     /**
@@ -374,7 +374,7 @@ abstract class CacheEngine implements CacheInterface, CacheEngineInterface
     protected function duration(DateInterval|int|null $ttl): int
     {
         if ($ttl === null) {
-            return $this->_config['duration'];
+            return $this->config['duration'];
         }
         if (is_int($ttl)) {
             return $ttl;
