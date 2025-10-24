@@ -304,7 +304,7 @@ abstract class CacheEngine implements CacheInterface, CacheEngineInterface, Even
     public function add(string $key, mixed $value): bool
     {
         $cachedValue = $this->get($key);
-        $prefixedKey = $this->_key($key);
+        $prefixedKey = $this->key($key);
 
         $this->_eventClass = CacheBeforeAddEvent::class;
         $this->dispatchEvent(CacheBeforeAddEvent::NAME, ['key' => $prefixedKey, 'value' => $value]);

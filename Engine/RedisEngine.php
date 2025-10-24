@@ -625,7 +625,7 @@ class RedisEngine extends CacheEngine
      */
     public function clearGroup(string $group): bool
     {
-        $success = (bool)$this->Redis->incr($this->_config['prefix'] . $group);
+        $success = (bool)$this->Redis->incr($this->config['prefix'] . $group);
         $this->_eventClass = CacheGroupClearEvent::class;
         $this->dispatchEvent(CacheGroupClearEvent::NAME, ['group' => $group]);
 

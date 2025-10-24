@@ -591,7 +591,7 @@ class MemcachedEngine extends CacheEngine
      */
     public function clearGroup(string $group): bool
     {
-        $result = (bool)$this->Memcached->increment($this->_config['prefix'] . $group);
+        $result = (bool)$this->Memcached->increment($this->config['prefix'] . $group);
         $this->_eventClass = CacheGroupClearEvent::class;
         $this->dispatchEvent(CacheGroupClearEvent::NAME, ['group' => $group]);
 
