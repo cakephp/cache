@@ -80,7 +80,7 @@ class CacheAfterIncrementEvent extends Event
      * @param mixed $value The value to set.
      * @return $this
      */
-    public function setResult(mixed $value = null)
+    public function setResult(mixed $value = null): static
     {
         if ($value !== null && !is_bool($value)) {
             throw new InvalidArgumentException(
