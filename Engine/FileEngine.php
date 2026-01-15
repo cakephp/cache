@@ -435,8 +435,8 @@ class FileEngine extends CacheEngine
             if (!$exists && !chmod($this->_File->getPathname(), (int)$this->_config['mask'])) {
                 trigger_error(sprintf(
                     'Could not apply permission mask `%s` on cache file `%s`',
-                    $this->_File->getPathname(),
                     $this->_config['mask'],
+                    $this->_File->getPathname(),
                 ), E_USER_WARNING);
             }
         }
