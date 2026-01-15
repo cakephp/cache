@@ -27,7 +27,7 @@ use RuntimeException;
 /**
  * Cache provides a consistent interface to Caching in your application. It allows you
  * to use several different Cache engines, without coupling your application to a specific
- * implementation. It also allows you to change out cache storage or configuration without effecting
+ * implementation. It also allows you to change out cache storage or configuration without affecting
  * the rest of your application.
  *
  * ### Configuring Cache engines
@@ -561,7 +561,7 @@ class Cache
      * @param string $config The cache configuration to use for this operation.
      *   Defaults to default.
      * @return mixed If the key is found: the cached data.
-     *   If the key is not found the value returned by the the default callback.
+     *   If the key is not found the value returned by the default callback.
      */
     public static function remember(string $key, Closure $default, string $config = 'default'): mixed
     {

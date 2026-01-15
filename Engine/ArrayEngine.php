@@ -192,7 +192,7 @@ class ArrayEngine extends CacheEngine
     }
 
     /**
-     * Delete all keys from the cache. This will clear every cache config using APC.
+     * Delete all keys from the cache.
      *
      * @return bool True Returns true.
      */

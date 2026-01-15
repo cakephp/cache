@@ -216,7 +216,7 @@ class MemcachedEngine extends CacheEngine
     }
 
     /**
-     * Settings the memcached instance
+     * Set the memcached instance options
      *
      * @return void
      * @throws \Cake\Cache\Exception\InvalidArgumentException When the Memcached extension is not built
@@ -372,7 +372,7 @@ class MemcachedEngine extends CacheEngine
         $value = $this->_Memcached->get($key);
 
         $this->_eventClass = CacheAfterGetEvent::class;
-        if ($this->_Memcached->getResultCode() == Memcached::RES_NOTFOUND) {
+        if ($this->_Memcached->getResultCode() === Memcached::RES_NOTFOUND) {
             $this->dispatchEvent(CacheAfterGetEvent::NAME, ['key' => $key, 'value' => null, 'success' => false]);
 
             return $default;
